@@ -1,12 +1,11 @@
 import * as FS from 'node:fs/promises'
 
-
 const txt = await FS.readFile('input.txt', 'latin1')
 const initial = txt.split(' ').map(_ => Number(_))
-console.log(txt)
+
 const lookup = new Map()
-
-
+let hits = 0;
+let misses = 0;
 
 const step = (stone) => {
     if (stone === 0) {
@@ -23,18 +22,19 @@ const step = (stone) => {
 }
 
 const lengthOf = (stone, iterations) => {
-    const key = `lengthOf(${stone}, ${iterations})`
-    if (lookup.has(key)) {
-        return lookup.get(key)
-    }
-
     if (iterations === 0) {
         return 1
     }
 
+    const key = `lengthOf(${stone}, ${iterations})`
+    if (lookup.has(key)) {
+        hits += iterations; // we're avoiding this many calls right?
+        return lookup.get(key)
+    }
+
+    misses++;
     const total = solve(step(stone), iterations - 1)
     lookup.set(key, total)
-
     return total
 }
 
@@ -46,6 +46,6 @@ const solve = (stones, iterations) => {
     return total
 }
 
-
 console.log(`step-1`, solve(initial, 25))
 console.log(`step-2`, solve(initial, 75))
+console.log(`hits: ${hits},\tmisses: ${misses} (${(100 * hits / (hits + misses)).toFixed(2)}%)`)
